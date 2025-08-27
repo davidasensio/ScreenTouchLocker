@@ -1,7 +1,6 @@
 package com.handysparksoft.screentouchlocker.ui.onboarding
 
 import android.content.Context
-import android.content.ContextWrapper
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -47,7 +46,6 @@ import com.handysparksoft.screentouchlocker.ScreenTouchLockerAction
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerService
 import com.handysparksoft.screentouchlocker.ShakeDetectorService
 import com.handysparksoft.screentouchlocker.drawOverOtherAppsEnabled
-import com.handysparksoft.screentouchlocker.logdAndToast
 import com.handysparksoft.screentouchlocker.ui.theme.ScreenTouchLockerTheme
 
 @OptIn(ExperimentalPagerApi::class)
@@ -162,7 +160,7 @@ private fun LockActionContent(canDrawOverlays: Boolean, context: Context) {
                     ShakeDetectorService.startTheService(context = context)
                     (context as ComponentActivity).finish()
                 }
-                (context as ContextWrapper).logdAndToast("Clicked!")
+                // (context as ContextWrapper).logdAndToast("Clicked!")
             },
         ) {
             Text(text = stringResource(R.string.lock_the_screen))

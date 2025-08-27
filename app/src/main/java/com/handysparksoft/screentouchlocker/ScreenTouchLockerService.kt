@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.os.Handler
 import android.os.IBinder
@@ -128,7 +129,7 @@ class ScreenTouchLockerService : Service() {
                 .addAction(getStopAction())
                 .build()
 
-            startForeground(1, notification)
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING)
         }
     }
 
