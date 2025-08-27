@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.handysparksoft.screentouchlocker">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
@@ -57,7 +57,9 @@
             android:exported="true"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:stopWithTask="false" />
+            android:stopWithTask="false"
+            android:foregroundServiceType="mediaProcessing"
+            />
 
         <service
             android:name="com.handysparksoft.screentouchlocker.ShakeDetectorService"

@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.2.10'
 }
 
 // Create a variable called keystorePropertiesFile, and initialize it to your keystore.properties file, in the rootProject folder.
@@ -14,19 +15,16 @@ try {
 }
 
 android {
-    compileSdk 32
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.handysparksoft.screentouchlocker"
-        minSdk 26
-        targetSdk 32
+        minSdk 29
+        targetSdk 36
         versionCode 3
         versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary true
-        }
     }
 
     signingConfigs {
@@ -45,6 +43,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
         }
@@ -67,27 +66,29 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    namespace 'com.handysparksoft.screentouchlocker'
 }
 
 dependencies {
+    // Import the Compose BOM
+    implementation platform('androidx.compose:compose-bom:2025.08.00')
 
-    implementation "androidx.core:core-ktx:1.7.0"
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
-    implementation "androidx.activity:activity-compose:1.4.0"
-    implementation "androidx.lifecycle:lifecycle-service:2.4.1"
+    implementation "androidx.core:core-ktx:1.17.0"
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.material:material"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.9.2"
+    implementation "androidx.activity:activity-compose:1.10.1"
+    implementation "androidx.lifecycle:lifecycle-service:2.9.2"
     implementation "com.squareup:seismic:1.0.3"
-    implementation "com.google.accompanist:accompanist-pager:0.23.1"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.23.1"
-    implementation "com.google.android.play:core:1.10.3"
-    implementation "com.google.android.play:core-ktx:1.8.1"
+    implementation "com.google.accompanist:accompanist-pager:0.36.0"
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.36.0"
+    implementation "com.google.android.play:review:2.0.2"
 
     testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+    androidTestImplementation "androidx.test.ext:junit:1.3.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.7.0"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
 }
