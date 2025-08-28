@@ -33,7 +33,7 @@ class ScreenTouchLockerService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        startService()
+        startForegroundNotification()
         this.logdAndToast("Service created")
     }
 
@@ -89,7 +89,7 @@ class ScreenTouchLockerService : Service() {
         return null
     }
 
-    private fun startService() {
+    private fun startForegroundNotification() {
         createNotificationChannelAndStartForeground()
     }
 

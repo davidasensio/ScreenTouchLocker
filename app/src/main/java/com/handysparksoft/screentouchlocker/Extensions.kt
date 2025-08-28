@@ -1,14 +1,18 @@
 package com.handysparksoft.screentouchlocker
 
+import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 
 /**
  * Permissions functions
@@ -26,6 +30,17 @@ fun Context.drawOverOtherAppsEnabled(): Boolean {
 
 fun Context.requestOverlayPermission() {
     startActivity(getOverlayPermissionIntent())
+}
+
+fun Context.postNotificationsEnabled(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else {
+        true // Permission not required on lower versions (Only 33+)
+    }
 }
 
 /**

@@ -45,12 +45,15 @@ import com.handysparksoft.screentouchlocker.R
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerAction
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerService
 import com.handysparksoft.screentouchlocker.ShakeDetectorService
-import com.handysparksoft.screentouchlocker.drawOverOtherAppsEnabled
 import com.handysparksoft.screentouchlocker.ui.theme.ScreenTouchLockerTheme
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun OnboardingScreen(canDrawOverlays: Boolean) {
+fun OnboardingScreen(
+    canDrawOverlays: Boolean,
+    canPostNotifications: Boolean,
+    onAskForPostNotificationsPermission: () -> Unit = {},
+    onAskForOverlayPermission: () -> Unit = {}
+) {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
 
@@ -74,7 +77,13 @@ fun OnboardingScreen(canDrawOverlays: Boolean) {
             }
 
             Box(Modifier.align(Alignment.BottomCenter)) {
-                LockActionContent(canDrawOverlays, context)
+                LockActionContent(
+                    context = context,
+                    canDrawOverlays = canDrawOverlays,
+                    canPostNotifications = canPostNotifications,
+                    onAskForPostNotificationsPermission = onAskForPostNotificationsPermission,
+                    onAskForOverlayPermission = onAskForOverlayPermission,
+                )
             }
         }
     }
@@ -135,12 +144,18 @@ private fun OnboardingContentPager(pagerState: PagerState) {
 }
 
 @Composable
-private fun LockActionContent(canDrawOverlays: Boolean, context: Context) {
+private fun LockActionContent(
+    context: Context,
+    canDrawOverlays: Boolean,
+    canPostNotifications: Boolean,
+    onAskForPostNotificationsPermission: () -> Unit,
+    onAskForOverlayPermission: () -> Unit,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 60.dp),
     ) {
-        if (!canDrawOverlays) {
+        if (!canDrawOverlays || !canPostNotifications) {
             Text(
                 text = stringResource(R.string.required_overlay_permissions),
                 textAlign = TextAlign.Center,
@@ -155,10 +170,20 @@ private fun LockActionContent(canDrawOverlays: Boolean, context: Context) {
                 .height(48.dp)
                 .align(Alignment.CenterHorizontally),
             onClick = {
-                ScreenTouchLockerService.startTheService(context = context, action = ScreenTouchLockerAction.ActionLock)
-                if (context.drawOverOtherAppsEnabled()) {
-                    ShakeDetectorService.startTheService(context = context)
-                    (context as ComponentActivity).finish()
+                if (!canPostNotifications) {
+                    onAskForPostNotificationsPermission()
+                } else {
+                    if (!canDrawOverlays) {
+                        onAskForOverlayPermission()
+                    } else {
+                        ScreenTouchLockerService.startTheService(
+                            context = context,
+                            action = ScreenTouchLockerAction.ActionLock
+                        )
+
+                        ShakeDetectorService.startTheService(context = context)
+                        (context as ComponentActivity).finish()
+                    }
                 }
                 // (context as ContextWrapper).logdAndToast("Clicked!")
             },
@@ -242,8 +267,8 @@ private fun getAnimatedGraphicsLayer(offsetForPage: Float) = Modifier.graphicsLa
 @Preview
 @Preview(device = Devices.NEXUS_5)
 @Composable
-fun OnboardingScreen() {
+fun OnboardingScreenPreview() {
     ScreenTouchLockerTheme {
-        OnboardingScreen(canDrawOverlays = true)
+        OnboardingScreen(canDrawOverlays = true, canPostNotifications = true)
     }
 }
