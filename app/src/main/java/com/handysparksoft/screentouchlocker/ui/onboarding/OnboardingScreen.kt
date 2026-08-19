@@ -9,13 +9,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -33,14 +41,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.calculateCurrentOffsetForPage
-import com.google.accompanist.pager.rememberPagerState
 import com.handysparksoft.screentouchlocker.R
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerAction
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerService
@@ -55,7 +58,7 @@ fun OnboardingScreen(
     onAskForOverlayPermission: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(pageCount = { OnboardingImages.size })
 
     Surface {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -66,7 +69,7 @@ fun OnboardingScreen(
             Column {
                 OnboardingContentPager(pagerState)
 
-                HorizontalPagerIndicator(
+                PagerIndicator(
                     pagerState = pagerState,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -89,7 +92,6 @@ fun OnboardingScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun BackgroundImage(pagerState: PagerState) {
     Crossfade(
@@ -101,6 +103,40 @@ private fun BackgroundImage(pagerState: PagerState) {
             contentDescription = null,
             contentScale = ContentScale.FillWidth,
             modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+/**
+ * Stands in for accompanist's HorizontalPagerIndicator, which has no Foundation equivalent.
+ * Inactive dots sit in a row with the active dot sliding across them as the pager scrolls.
+ */
+@Composable
+private fun PagerIndicator(
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+    indicatorSize: Dp = 8.dp,
+    spacing: Dp = 8.dp,
+) {
+    val activeColor = LocalContentColor.current
+    val inactiveColor = activeColor.copy(alpha = 0.38f)
+
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+            repeat(pagerState.pageCount) {
+                Box(
+                    modifier = Modifier
+                        .size(indicatorSize)
+                        .background(color = inactiveColor, shape = CircleShape),
+                )
+            }
+        }
+        val scrolled = pagerState.currentPage + pagerState.currentPageOffsetFraction
+        Box(
+            modifier = Modifier
+                .offset(x = (indicatorSize + spacing) * scrolled)
+                .size(indicatorSize)
+                .background(color = activeColor, shape = CircleShape),
         )
     }
 }
@@ -123,23 +159,28 @@ private fun GradientWhiteBox() {
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun OnboardingContentPager(pagerState: PagerState) {
-    HorizontalPager(
-        count = OnboardingImages.size,
-        state = pagerState,
-    ) { page ->
-        val animatedModifier = getAnimatedGraphicsLayer(calculateCurrentOffsetForPage(page))
+    HorizontalPager(state = pagerState) { page ->
+        // Foundation has no calculateCurrentOffsetForPage; this is its definition.
+        val offsetForPage = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+        val animatedModifier = getAnimatedGraphicsLayer(offsetForPage)
 
-        PagerSimpleItem(
-            page = page,
-            modifier = Modifier
-                .fillMaxWidth(0.75f)
-                .padding(top = 50.dp)
-                .defaultMinSize(minHeight = 220.dp)
-                .then(animatedModifier),
-        )
+        // Foundation aligns page content to the start, where accompanist centred it, so the
+        // 75%-width item needs an explicit centring box to sit in the middle of the page.
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            PagerSimpleItem(
+                page = page,
+                modifier = Modifier
+                    .fillMaxWidth(0.75f)
+                    .padding(top = 50.dp)
+                    .defaultMinSize(minHeight = 220.dp)
+                    .then(animatedModifier),
+            )
+        }
     }
 }
 
