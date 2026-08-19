@@ -7,6 +7,8 @@
     <string name="onboarding_title_2">Shake &amp; Lock</string>
     <string name="onboarding_subtitle_2">Looking for quicker activation? Just shake your device and go!</string>
     <string name="onboarding_title_3">Quick Tile Access</string>
+    <string name="onboarding_add_tile_action">Add the Quick Tile</string>
+    <string name="onboarding_add_tile_added">Quick Tile added</string>
     <string name="onboarding_subtitle_3">Screen Touch Locker also offers a Quick Tile access in your notification bar. Edit yours and put there your Quick Tile access.</string>
 
     <string name="foreground_notification_content_title">Screen Touch Locker</string>

@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +37,9 @@ fun ConfigOptions(modifier: Modifier) {
         Column(modifier = modifier) {
             Text(
                 text = stringResource(id = R.string.config_options),
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             Column(modifier = Modifier.padding(start = 16.dp)) {
@@ -51,7 +51,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onShowLockedTouchesValueChange(checked)
                             scope.launch { prefs.showLockedTouches = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -62,7 +62,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onVibrateValueChange(checked)
                             scope.launch { prefs.vibrate = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -73,7 +73,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onEnableShakeAndLockValueChange(checked)
                             scope.launch { prefs.enableShakeAndLock = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -84,7 +84,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onEnableShakeAndUnlockValueChange(checked)
                             scope.launch { prefs.enableShakeAndUnlock = checked }
-                        }
+                        },
                     )
                 }
             }

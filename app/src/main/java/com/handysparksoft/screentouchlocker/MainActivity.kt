@@ -9,7 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
             var canDrawOverlays by remember { mutableStateOf(drawOverOtherAppsEnabled()) }
             var canPostNotifications by remember { mutableStateOf(postNotificationsEnabled()) }
             val permissionLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
+                ActivityResultContracts.RequestPermission(),
             ) { isGranted: Boolean ->
                 canPostNotifications = isGranted
             }
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             if (!canDrawOverlays) {
                                 requestOverlayPermission()
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -81,6 +81,6 @@ private fun startInAppReviewFlow(context: Context) {
 @Composable
 fun DefaultPreview() {
     ScreenTouchLockerTheme {
-        OnboardingScreen(canDrawOverlays = false, canPostNotifications = false,)
+        OnboardingScreen(canDrawOverlays = false, canPostNotifications = false)
     }
 }

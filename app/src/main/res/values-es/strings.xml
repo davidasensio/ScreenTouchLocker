@@ -7,6 +7,8 @@
     <string name="onboarding_title_2">Agita y bloquea</string>
     <string name="onboarding_subtitle_2">¿Te gustaría una activación rápida y cómoda? ¡Simplemente agita tu dispositivo y listo!</string>
     <string name="onboarding_title_3">Acceso rápido en la barra</string>
+    <string name="onboarding_add_tile_action">Añadir el acceso rápido</string>
+    <string name="onboarding_add_tile_added">Acceso rápido añadido</string>
     <string name="onboarding_subtitle_3">Screen Touch Locker también ofrece un acceso rápido (Tile) en la barra superior de notificaciones. Edita tus accesos para tener tu acceso rápido de bloqueo siempre a mano.</string>
 
     <string name="foreground_notification_content_title">Screen Touch Locker</string>
