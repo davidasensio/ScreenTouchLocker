@@ -2,9 +2,11 @@ package com.handysparksoft.screentouchlocker.classic
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.os.Build
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import com.handysparksoft.screentouchlocker.R
 import com.handysparksoft.screentouchlocker.platform.Prefs
@@ -37,6 +39,13 @@ class LockerWindow(val context: Context, private val onCloseWindow: () -> Unit) 
 
     private fun initWindowParams() {
         windowParams.gravity = Gravity.CENTER
+
+        // Lay the overlay out underneath the navigation bar so it also blocks touches there,
+        // while still clearing the status bar. Below API 30 the deprecated system UI flags in
+        // open() are the only way to express this.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            windowParams.fitInsetsTypes = WindowInsets.Type.statusBars()
+        }
     }
 
     private fun initWindow() {
@@ -51,7 +60,11 @@ class LockerWindow(val context: Context, private val onCloseWindow: () -> Unit) 
     fun open() {
         try {
             windowManager.addView(rootView, windowParams)
-            rootView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                @Suppress("DEPRECATION")
+                rootView.systemUiVisibility =
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            }
             if (prefs.vibrate) {
                 context.vibrate()
             }

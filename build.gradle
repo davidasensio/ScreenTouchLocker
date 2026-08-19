@@ -1,9 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '9.3.1' apply false
-    id 'com.android.library' version '9.3.1' apply false
-    id 'com.diffplug.spotless' version '8.9.0'
+    alias libs.plugins.android.application apply false
+    alias libs.plugins.android.library apply false
+    alias libs.plugins.spotless
 }
+
+// Resolved here so the subprojects closure below does not need the catalog accessor.
+def ktlintVersion = libs.versions.ktlint.get()
 
 subprojects {
 
@@ -13,7 +16,7 @@ subprojects {
             target '**/*.kt'
             targetExclude('**/build/**/*.kt', 'bin/**/*.kt')
 
-            ktlint('1.8.0').editorConfigOverride([
+            ktlint(ktlintVersion).editorConfigOverride([
                   android: 'true',
                   'indent_size': '4',
                   'max_line_length': '124',
