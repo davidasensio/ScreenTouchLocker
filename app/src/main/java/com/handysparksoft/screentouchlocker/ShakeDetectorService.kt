@@ -19,8 +19,11 @@ class ShakeDetectorService : Service() {
         )
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val action = intent.action
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        /** A null intent is redelivered when the system restarts this START_STICKY service after
+         *  the process was killed, so it must be handled instead of dereferenced.
+         */
+        val action = intent?.action
 
         /** Stop the service if we receive the Stop action.
          *  START_NOT_STICKY is important here, we don't want the service to be relaunched.

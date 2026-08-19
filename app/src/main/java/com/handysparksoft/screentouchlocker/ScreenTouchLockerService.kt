@@ -1,5 +1,6 @@
 package com.handysparksoft.screentouchlocker
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,9 +9,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Color
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.handysparksoft.screentouchlocker.classic.LockerWindow
 import com.handysparksoft.screentouchlocker.platform.Prefs
@@ -37,10 +40,14 @@ class ScreenTouchLockerService : Service() {
         this.logdAndToast("Service created")
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        val action = intent.action
+        /** The system redelivers a null intent when it restarts a START_STICKY service after the
+         *  process was killed. There is nothing to act on: the foreground notification was already
+         *  restored in onCreate(), so just keep running.
+         */
+        val action = intent?.action ?: return START_STICKY
 
         /** Stop the service if we receive the Stop action.
          *  START_NOT_STICKY is important here, we don't want the service to be relaunched.
@@ -62,7 +69,10 @@ class ScreenTouchLockerService : Service() {
             } else {
                 ScreenTouchLockerTileService.startTileService(this)
                 lockerWindow.open()
-                Handler(Looper.getMainLooper()).postDelayed({ screenShakenAndLocked = true }, SHAKE_DETECTION_DELAY)
+                Handler(Looper.getMainLooper()).postDelayed(
+                    { screenShakenAndLocked = true },
+                    SHAKE_DETECTION_DELAY
+                )
                 this.logdAndToast("Action Lock")
             }
         }
@@ -70,11 +80,30 @@ class ScreenTouchLockerService : Service() {
         if (action == ScreenTouchLockerAction.ActionUnlock.name || shakeAndUnlock) {
             ScreenTouchLockerTileService.stopTileService(this)
             lockerWindow.close()
-            Handler(Looper.getMainLooper()).postDelayed({ screenShakenAndLocked = false }, SHAKE_DETECTION_DELAY)
+            Handler(Looper.getMainLooper()).postDelayed(
+                { screenShakenAndLocked = false },
+                SHAKE_DETECTION_DELAY
+            )
             this.logdAndToast("Action Unlock")
         }
 
         return START_STICKY
+    }
+
+    /** Foreground service timeout callbacks (API 35 / 36). The specialUse type this service uses is
+     *  not time-limited, but if that ever changes the system gives us only a few seconds to stop
+     *  before raising an ANR, so shut down cleanly instead.
+     */
+    @RequiresApi(35)
+    override fun onTimeout(startId: Int) {
+        this.logdAndToast("Foreground service timed out")
+        stopService()
+    }
+
+    @RequiresApi(36)
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        this.logdAndToast("Foreground service timed out (type $fgsType)")
+        stopService()
     }
 
     override fun onDestroy() {
@@ -94,43 +123,70 @@ class ScreenTouchLockerService : Service() {
     }
 
     private fun createNotificationChannelAndStartForeground() {
-        val notificationChannelId = "screenTouchLockerForegroundService"
-        val channelName = "Foreground service ScreenTouchLocker"
         val notificationChannel = NotificationChannel(
-            notificationChannelId,
-            channelName,
+            NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME,
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationChannel.lightColor = Color.RED
 
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
-        notificationManager?.let {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager?.createNotificationChannel(notificationChannel)
 
-            it.createNotificationChannel(notificationChannel)
-
-            val notificationBuilder = NotificationCompat.Builder(this, notificationChannelId)
-            val notificationIntent = Intent(this, MainActivity::class.java).apply {
-                action = ScreenTouchLockerAction.ActionUnlock.toString()
-            }
-            val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
-            val notification = notificationBuilder
-                .setOngoing(true)
-                .setContentTitle(getString(R.string.foreground_notification_content_title))
-                .setContentText(getString(R.string.foreground_notification_content_text))
-                .setSmallIcon(R.drawable.ic_screen_locker_icon)
-                .setPriority(NotificationManager.IMPORTANCE_MIN)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setContentIntent(pendingIntent)
-                .setStyle(
-                    NotificationCompat.BigTextStyle().bigText(getString(R.string.foreground_notification_content_text_big))
-                )
-                .addAction(getLockAction())
-                .addAction(getUnlockAction())
-                .addAction(getStopAction())
-                .build()
-
-            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING)
+        /** startForeground() must be reached on every path: once startForegroundService() has been
+         *  called, failing to call it kills the process with ForegroundServiceDidNotStartInTime.
+         *  It used to sit inside a null-check on the NotificationManager, which could skip it.
+         */
+        try {
+            startForegroundCompat(buildNotification())
+        } catch (e: Exception) {
+            /** Broad on purpose: ForegroundServiceStartNotAllowedException (API 31+) and
+             *  InvalidForegroundServiceTypeException (API 34+) can't be named below their API level.
+             *  Nothing useful is left to do, so stop instead of crashing.
+             */
+            this.logd("startForeground failed: ${e.message}")
+            stopSelf()
         }
+    }
+
+    private fun startForegroundCompat(notification: Notification) {
+        /** FOREGROUND_SERVICE_TYPE_SPECIAL_USE only exists from API 34. Passing a type the running
+         *  OS doesn't know throws InvalidForegroundServiceTypeException, and minSdk here is 29.
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun buildNotification(): Notification {
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+            action = ScreenTouchLockerAction.ActionUnlock.toString()
+        }
+        val pendingIntent =
+            PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+        return notificationBuilder
+            .setOngoing(true)
+            .setContentTitle(getString(R.string.foreground_notification_content_title))
+            .setContentText(getString(R.string.foreground_notification_content_text))
+            .setSmallIcon(R.drawable.ic_screen_locker_icon)
+            .setPriority(NotificationManager.IMPORTANCE_MIN)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setContentIntent(pendingIntent)
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(getString(R.string.foreground_notification_content_text_big))
+            )
+            .addAction(getLockAction())
+            .addAction(getUnlockAction())
+            .addAction(getStopAction())
+            .build()
     }
 
     private fun getLockAction(): NotificationCompat.Action {
@@ -170,7 +226,7 @@ class ScreenTouchLockerService : Service() {
      * Remove the foreground notification and stop the service.
      */
     private fun stopService() {
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
         this.logdAndToast("Service stopped")
     }
@@ -178,8 +234,14 @@ class ScreenTouchLockerService : Service() {
     companion object {
 
         private const val SHAKE_DETECTION_DELAY = 1500L
+        private const val NOTIFICATION_ID = 1
+        private const val NOTIFICATION_CHANNEL_ID = "screenTouchLockerForegroundService"
+        private const val NOTIFICATION_CHANNEL_NAME = "Foreground service ScreenTouchLocker"
 
-        fun startTheService(context: Context, action: ScreenTouchLockerAction = ScreenTouchLockerAction.ActionStart) {
+        fun startTheService(
+            context: Context,
+            action: ScreenTouchLockerAction = ScreenTouchLockerAction.ActionStart
+        ) {
             val serviceIntent = Intent(context, ScreenTouchLockerService::class.java)
             serviceIntent.action = action.toString()
             context.startForegroundService(serviceIntent)
