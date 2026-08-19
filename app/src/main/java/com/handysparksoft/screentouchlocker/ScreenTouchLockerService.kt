@@ -27,7 +27,7 @@ class ScreenTouchLockerService : Service() {
             context = this,
             onCloseWindow = {
                 startTheService(context = this, action = ScreenTouchLockerAction.ActionUnlock)
-            }
+            },
         )
     }
 
@@ -43,15 +43,13 @@ class ScreenTouchLockerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        /** The system redelivers a null intent when it restarts a START_STICKY service after the
-         *  process was killed. There is nothing to act on: the foreground notification was already
-         *  restored in onCreate(), so just keep running.
-         */
+        // The system redelivers a null intent when it restarts a START_STICKY service after the
+        // process was killed. There is nothing to act on: the foreground notification was already
+        // restored in onCreate(), so just keep running.
         val action = intent?.action ?: return START_STICKY
 
-        /** Stop the service if we receive the Stop action.
-         *  START_NOT_STICKY is important here, we don't want the service to be relaunched.
-         */
+        // Stop the service if we receive the Stop action.
+        // START_NOT_STICKY is important here, we don't want the service to be relaunched.
         if (action == ScreenTouchLockerAction.ActionStop.name) {
             lockerWindow.close()
             stopService()
@@ -71,7 +69,7 @@ class ScreenTouchLockerService : Service() {
                 lockerWindow.open()
                 Handler(Looper.getMainLooper()).postDelayed(
                     { screenShakenAndLocked = true },
-                    SHAKE_DETECTION_DELAY
+                    SHAKE_DETECTION_DELAY,
                 )
                 this.logdAndToast("Action Lock")
             }
@@ -82,7 +80,7 @@ class ScreenTouchLockerService : Service() {
             lockerWindow.close()
             Handler(Looper.getMainLooper()).postDelayed(
                 { screenShakenAndLocked = false },
-                SHAKE_DETECTION_DELAY
+                SHAKE_DETECTION_DELAY,
             )
             this.logdAndToast("Action Unlock")
         }
@@ -114,9 +112,7 @@ class ScreenTouchLockerService : Service() {
         screenShakenAndLocked = false
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 
     private fun startForegroundNotification() {
         createNotificationChannelAndStartForeground()
@@ -126,38 +122,35 @@ class ScreenTouchLockerService : Service() {
         val notificationChannel = NotificationChannel(
             NOTIFICATION_CHANNEL_ID,
             NOTIFICATION_CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_DEFAULT,
         )
         notificationChannel.lightColor = Color.RED
 
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager?.createNotificationChannel(notificationChannel)
 
-        /** startForeground() must be reached on every path: once startForegroundService() has been
-         *  called, failing to call it kills the process with ForegroundServiceDidNotStartInTime.
-         *  It used to sit inside a null-check on the NotificationManager, which could skip it.
-         */
+        // startForeground() must be reached on every path: once startForegroundService() has been
+        // called, failing to call it kills the process with ForegroundServiceDidNotStartInTime.
+        // It used to sit inside a null-check on the NotificationManager, which could skip it.
         try {
             startForegroundCompat(buildNotification())
         } catch (e: Exception) {
-            /** Broad on purpose: ForegroundServiceStartNotAllowedException (API 31+) and
-             *  InvalidForegroundServiceTypeException (API 34+) can't be named below their API level.
-             *  Nothing useful is left to do, so stop instead of crashing.
-             */
+            // Broad on purpose: ForegroundServiceStartNotAllowedException (API 31+) and
+            // InvalidForegroundServiceTypeException (API 34+) can't be named below their API level.
+            // Nothing useful is left to do, so stop instead of crashing.
             this.logd("startForeground failed: ${e.message}")
             stopSelf()
         }
     }
 
     private fun startForegroundCompat(notification: Notification) {
-        /** FOREGROUND_SERVICE_TYPE_SPECIAL_USE only exists from API 34. Passing a type the running
-         *  OS doesn't know throws InvalidForegroundServiceTypeException, and minSdk here is 29.
-         */
+        // FOREGROUND_SERVICE_TYPE_SPECIAL_USE only exists from API 34. Passing a type the running
+        // OS doesn't know throws InvalidForegroundServiceTypeException, and minSdk here is 29.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 NOTIFICATION_ID,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
             )
         } else {
             startForeground(NOTIFICATION_ID, notification)
@@ -181,7 +174,7 @@ class ScreenTouchLockerService : Service() {
             .setContentIntent(pendingIntent)
             .setStyle(
                 NotificationCompat.BigTextStyle()
-                    .bigText(getString(R.string.foreground_notification_content_text_big))
+                    .bigText(getString(R.string.foreground_notification_content_text_big)),
             )
             .addAction(getLockAction())
             .addAction(getUnlockAction())
@@ -196,7 +189,7 @@ class ScreenTouchLockerService : Service() {
         return NotificationCompat.Action(
             R.drawable.ic_screen_lock_portrait,
             getString(R.string.foreground_notification_lock_action),
-            pendingIntent
+            pendingIntent,
         )
     }
 
@@ -207,7 +200,7 @@ class ScreenTouchLockerService : Service() {
         return NotificationCompat.Action(
             R.drawable.ic_screen_portrait,
             getString(R.string.foreground_notification_unlock_action),
-            pendingIntent
+            pendingIntent,
         )
     }
 
@@ -218,7 +211,7 @@ class ScreenTouchLockerService : Service() {
         return NotificationCompat.Action(
             R.drawable.ic_stop,
             getString(R.string.foreground_notification_stop_action),
-            pendingIntent
+            pendingIntent,
         )
     }
 
@@ -238,10 +231,7 @@ class ScreenTouchLockerService : Service() {
         private const val NOTIFICATION_CHANNEL_ID = "screenTouchLockerForegroundService"
         private const val NOTIFICATION_CHANNEL_NAME = "Foreground service ScreenTouchLocker"
 
-        fun startTheService(
-            context: Context,
-            action: ScreenTouchLockerAction = ScreenTouchLockerAction.ActionStart
-        ) {
+        fun startTheService(context: Context, action: ScreenTouchLockerAction = ScreenTouchLockerAction.ActionStart) {
             val serviceIntent = Intent(context, ScreenTouchLockerService::class.java)
             serviceIntent.action = action.toString()
             context.startForegroundService(serviceIntent)

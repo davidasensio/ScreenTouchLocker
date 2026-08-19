@@ -27,7 +27,7 @@ class LockerWindow(val context: Context, private val onCloseWindow: () -> Unit) 
         WindowManager.LayoutParams.MATCH_PARENT, // Display it on top of other application windows
         WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, // Don't let it grab the input focus
         windowFlags, // Window Flags
-        PixelFormat.TRANSLUCENT // Make the underlying application window visible
+        PixelFormat.TRANSLUCENT, // Make the underlying application window visible
     )
 
     init {

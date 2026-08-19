@@ -19,28 +19,24 @@ import androidx.core.content.ContextCompat
  */
 fun Context.getOverlayPermissionIntent() = Intent(
     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-    Uri.parse("package:$packageName")
+    Uri.parse("package:$packageName"),
 ).apply {
     flags = Intent.FLAG_ACTIVITY_NEW_TASK
 }
 
-fun Context.drawOverOtherAppsEnabled(): Boolean {
-    return Settings.canDrawOverlays(this)
-}
+fun Context.drawOverOtherAppsEnabled(): Boolean = Settings.canDrawOverlays(this)
 
 fun Context.requestOverlayPermission() {
     startActivity(getOverlayPermissionIntent())
 }
 
-fun Context.postNotificationsEnabled(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-    } else {
-        true // Permission not required on lower versions (Only 33+)
-    }
+fun Context.postNotificationsEnabled(): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    ContextCompat.checkSelfPermission(
+        this,
+        Manifest.permission.POST_NOTIFICATIONS,
+    ) == PackageManager.PERMISSION_GRANTED
+} else {
+    true // Permission not required on lower versions (Only 33+)
 }
 
 /**

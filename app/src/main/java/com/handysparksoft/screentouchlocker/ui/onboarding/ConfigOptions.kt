@@ -39,7 +39,7 @@ fun ConfigOptions(modifier: Modifier) {
                 text = stringResource(id = R.string.config_options),
                 style = MaterialTheme.typography.h5,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             Column(modifier = Modifier.padding(start = 16.dp)) {
@@ -51,7 +51,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onShowLockedTouchesValueChange(checked)
                             scope.launch { prefs.showLockedTouches = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -62,7 +62,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onVibrateValueChange(checked)
                             scope.launch { prefs.vibrate = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -73,7 +73,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onEnableShakeAndLockValueChange(checked)
                             scope.launch { prefs.enableShakeAndLock = checked }
-                        }
+                        },
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -84,7 +84,7 @@ fun ConfigOptions(modifier: Modifier) {
                         onCheckedChange = { checked ->
                             onEnableShakeAndUnlockValueChange(checked)
                             scope.launch { prefs.enableShakeAndUnlock = checked }
-                        }
+                        },
                     )
                 }
             }

@@ -17,10 +17,8 @@ import com.handysparksoft.screentouchlocker.platform.Prefs
 import java.util.Timer
 import java.util.TimerTask
 
-class LockerWindowContent @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : FrameLayout(context, attrs) {
+class LockerWindowContent @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    FrameLayout(context, attrs) {
 
     private val prefs by lazy { Prefs(context) }
 

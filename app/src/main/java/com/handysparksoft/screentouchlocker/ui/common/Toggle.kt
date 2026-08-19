@@ -12,17 +12,18 @@ fun Toggle(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Switch(
-        checked = checked, onCheckedChange = onCheckedChange,
+        checked = checked,
+        onCheckedChange = onCheckedChange,
         modifier = modifier,
         enabled = enabled,
         colors = SwitchDefaults.colors(
             checkedThumbColor = MaterialTheme.colors.primary,
             checkedTrackColor = MaterialTheme.colors.primary,
             uncheckedThumbColor = Disabled,
-            uncheckedTrackColor = MaterialTheme.colors.onSurface
-        )
+            uncheckedTrackColor = MaterialTheme.colors.onSurface,
+        ),
     )
 }

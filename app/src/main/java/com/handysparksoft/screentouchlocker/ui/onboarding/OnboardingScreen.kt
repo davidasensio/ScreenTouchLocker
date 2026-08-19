@@ -52,7 +52,7 @@ fun OnboardingScreen(
     canDrawOverlays: Boolean,
     canPostNotifications: Boolean,
     onAskForPostNotificationsPermission: () -> Unit = {},
-    onAskForOverlayPermission: () -> Unit = {}
+    onAskForOverlayPermission: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val pagerState = rememberPagerState()
@@ -70,7 +70,7 @@ fun OnboardingScreen(
                     pagerState = pagerState,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .padding(bottom = 32.dp)
+                        .padding(bottom = 32.dp),
                 )
 
                 ConfigOptions(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
@@ -94,13 +94,13 @@ fun OnboardingScreen(
 private fun BackgroundImage(pagerState: PagerState) {
     Crossfade(
         targetState = pagerState.currentPage,
-        animationSpec = tween(CrossFadeDuration)
+        animationSpec = tween(CROSS_FADE_DURATION),
     ) { page ->
         Image(
             painter = painterResource(id = OnboardingImages[page]),
             contentDescription = null,
             contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
@@ -116,10 +116,10 @@ private fun GradientWhiteBox() {
                         Color.Transparent,
                         MaterialTheme.colors.surface.copy(alpha = .95f),
                         MaterialTheme.colors.surface,
-                        MaterialTheme.colors.surface
-                    )
-                )
-            )
+                        MaterialTheme.colors.surface,
+                    ),
+                ),
+            ),
     )
 }
 
@@ -128,7 +128,7 @@ private fun GradientWhiteBox() {
 private fun OnboardingContentPager(pagerState: PagerState) {
     HorizontalPager(
         count = OnboardingImages.size,
-        state = pagerState
+        state = pagerState,
     ) { page ->
         val animatedModifier = getAnimatedGraphicsLayer(calculateCurrentOffsetForPage(page))
 
@@ -138,7 +138,7 @@ private fun OnboardingContentPager(pagerState: PagerState) {
                 .fillMaxWidth(0.75f)
                 .padding(top = 50.dp)
                 .defaultMinSize(minHeight = 220.dp)
-                .then(animatedModifier)
+                .then(animatedModifier),
         )
     }
 }
@@ -160,7 +160,7 @@ private fun LockActionContent(
                 text = stringResource(R.string.required_overlay_permissions),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.caption,
-                modifier = Modifier.fillMaxWidth(0.75f)
+                modifier = Modifier.fillMaxWidth(0.75f),
             )
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -178,7 +178,7 @@ private fun LockActionContent(
                     } else {
                         ScreenTouchLockerService.startTheService(
                             context = context,
-                            action = ScreenTouchLockerAction.ActionLock
+                            action = ScreenTouchLockerAction.ActionLock,
                         )
 
                         ShakeDetectorService.startTheService(context = context)
@@ -198,20 +198,20 @@ fun PagerSimpleItem(page: Int, modifier: Modifier) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(painter = painterResource(id = OnboardingIcons[page]), contentDescription = null)
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             text = stringResource(id = OnboardingTitles[page]),
             style = MaterialTheme.typography.h5,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(id = OnboardingSubtitles[page]),
             style = MaterialTheme.typography.body1,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -219,28 +219,28 @@ fun PagerSimpleItem(page: Int, modifier: Modifier) {
 private val OnboardingImages = listOf(
     R.drawable.onboarding1,
     R.drawable.onboarding2,
-    R.drawable.onboarding3
+    R.drawable.onboarding3,
 )
 
 private val OnboardingIcons = listOf(
     R.drawable.ic_screen_locker_icon,
     R.drawable.ic_shake,
-    R.drawable.ic_app_settings
+    R.drawable.ic_app_settings,
 )
 
 private val OnboardingTitles = listOf(
     R.string.onboarding_title_1,
     R.string.onboarding_title_2,
-    R.string.onboarding_title_3
+    R.string.onboarding_title_3,
 )
 
 private val OnboardingSubtitles = listOf(
     R.string.onboarding_subtitle_1,
     R.string.onboarding_subtitle_2,
-    R.string.onboarding_subtitle_3
+    R.string.onboarding_subtitle_3,
 )
 
-private const val CrossFadeDuration = 1000
+private const val CROSS_FADE_DURATION = 1000
 
 private fun getAnimatedGraphicsLayer(offsetForPage: Float) = Modifier.graphicsLayer {
     // We use the absolute value which allows us to mirror
@@ -250,7 +250,7 @@ private fun getAnimatedGraphicsLayer(offsetForPage: Float) = Modifier.graphicsLa
     lerp(
         start = 0.5.dp,
         stop = 1.dp,
-        fraction = 1f - offsetForPage.coerceIn(0f, 1f)
+        fraction = 1f - offsetForPage.coerceIn(0f, 1f),
     ).also { scale ->
         scaleX = scale.value
         scaleY = scale.value
@@ -260,7 +260,7 @@ private fun getAnimatedGraphicsLayer(offsetForPage: Float) = Modifier.graphicsLa
     alpha = lerp(
         start = 0.dp,
         stop = 1.dp,
-        fraction = 1f - offsetForPage.coerceIn(0f, 1f)
+        fraction = 1f - offsetForPage.coerceIn(0f, 1f),
     ).value
 }
 

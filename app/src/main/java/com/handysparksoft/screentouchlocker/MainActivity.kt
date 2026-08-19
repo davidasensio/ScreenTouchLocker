@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
             var canDrawOverlays by remember { mutableStateOf(drawOverOtherAppsEnabled()) }
             var canPostNotifications by remember { mutableStateOf(postNotificationsEnabled()) }
             val permissionLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()
+                ActivityResultContracts.RequestPermission(),
             ) { isGranted: Boolean ->
                 canPostNotifications = isGranted
             }
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             if (!canDrawOverlays) {
                                 requestOverlayPermission()
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -81,6 +81,6 @@ private fun startInAppReviewFlow(context: Context) {
 @Composable
 fun DefaultPreview() {
     ScreenTouchLockerTheme {
-        OnboardingScreen(canDrawOverlays = false, canPostNotifications = false,)
+        OnboardingScreen(canDrawOverlays = false, canPostNotifications = false)
     }
 }
