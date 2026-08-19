@@ -21,13 +21,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -48,6 +54,8 @@ import com.handysparksoft.screentouchlocker.R
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerAction
 import com.handysparksoft.screentouchlocker.ScreenTouchLockerService
 import com.handysparksoft.screentouchlocker.ShakeDetectorService
+import com.handysparksoft.screentouchlocker.canRequestAddTile
+import com.handysparksoft.screentouchlocker.requestAddQuickSettingsTile
 import com.handysparksoft.screentouchlocker.ui.theme.ScreenTouchLockerTheme
 
 @Composable
@@ -66,7 +74,14 @@ fun OnboardingScreen(
 
             GradientWhiteBox()
 
-            Column {
+            // The lock action below is a fixed overlay, so the scrolling content reserves room
+            // for it. Without this the config options are unreachable on short screens or at
+            // large font scales.
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = LOCK_ACTION_RESERVED_HEIGHT),
+            ) {
                 OnboardingContentPager(pagerState)
 
                 PagerIndicator(
@@ -177,7 +192,7 @@ private fun OnboardingContentPager(pagerState: PagerState) {
                 modifier = Modifier
                     .fillMaxWidth(0.75f)
                     .padding(top = 50.dp)
-                    .defaultMinSize(minHeight = 220.dp)
+                    .defaultMinSize(minHeight = 290.dp)
                     .then(animatedModifier),
             )
         }
@@ -254,6 +269,32 @@ fun PagerSimpleItem(page: Int, modifier: Modifier) {
             style = MaterialTheme.typography.body1,
             textAlign = TextAlign.Center,
         )
+        if (page == TILE_PAGE_INDEX) {
+            Spacer(modifier = Modifier.height(20.dp))
+            AddTileButton()
+        }
+    }
+}
+
+/**
+ * Asks the system to add the locker tile to the Quick Settings panel. The system dialog this uses
+ * only exists from API 33, so below that the page keeps its written instructions and no button.
+ */
+@Composable
+private fun AddTileButton() {
+    val context = LocalContext.current
+    if (!context.canRequestAddTile()) return
+
+    var added by remember { mutableStateOf(false) }
+    Button(
+        enabled = !added,
+        onClick = { context.requestAddQuickSettingsTile { result -> added = result } },
+    ) {
+        Text(
+            text = stringResource(
+                if (added) R.string.onboarding_add_tile_added else R.string.onboarding_add_tile_action,
+            ),
+        )
     }
 }
 
@@ -282,6 +323,10 @@ private val OnboardingSubtitles = listOf(
 )
 
 private const val CROSS_FADE_DURATION = 1000
+private const val TILE_PAGE_INDEX = 2
+
+// LockActionContent: 60dp padding, 48dp button, 60dp padding.
+private val LOCK_ACTION_RESERVED_HEIGHT = 168.dp
 
 private fun getAnimatedGraphicsLayer(offsetForPage: Float) = Modifier.graphicsLayer {
     // We use the absolute value which allows us to mirror
